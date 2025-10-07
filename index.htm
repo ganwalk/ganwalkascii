@@ -854,10 +854,19 @@
 				webcamBtn.addEventListener('click', setupWebcam);
 				
 				playPauseMusicBtn.addEventListener('click', () => {
+					// ALTERADO: Sincroniza o vídeo com a música
+					const isOriginalClip = video.currentSrc === ORIGINAL_CLIP_URL;
+
 					if (backgroundAudio.paused) {
 						backgroundAudio.play();
+						if (isOriginalClip) {
+							video.play();
+						}
 					} else {
 						backgroundAudio.pause();
+						if (isOriginalClip) {
+							video.pause();
+						}
 					}
 				});
 
@@ -931,5 +940,6 @@
 		</script>
 	</body>
 </html>
+
 
 
