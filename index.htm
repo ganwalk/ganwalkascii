@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>ASCII Webcam Avançado</title>
+		<title>Ganwalk II - Experiência II</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<!-- A biblioteca dat.GUI foi removida -->
@@ -343,6 +343,20 @@
 			#controls-bar.expanded ~ #create-prompt-text {
 				opacity: 0;
 			}
+			
+			/* ADICIONADO: Barra de rolagem subtil para a interface mobile */
+			#controls-bar::-webkit-scrollbar {
+				width: 6px;
+			}
+
+			#controls-bar::-webkit-scrollbar-track {
+				background: transparent;
+			}
+
+			#controls-bar::-webkit-scrollbar-thumb {
+				background-color: var(--border-color);
+				border-radius: 10px;
+			}
 
 
 			/* --- MEDIA QUERIES PARA RESPONSIVIDADE --- */
@@ -358,10 +372,19 @@
 					gap: 25px; /* Aumenta o espaço entre os grupos de controlo */
 				}
 				
-				/* ALTERADO: Garante que o título não fique no meio em mobile */
+				/* NOVO: Torna a primeira coluna um container flex para reordenar o título */
+				.control-group:first-of-type {
+					display: flex;
+					flex-direction: column;
+				}
+
+				/* ALTERADO: Move o título para o topo na versão mobile */
 				.interface-title {
+					order: -1; /* Move para o topo do seu container flex */
 					text-align: center;
-					margin-top: 15px; /* Muda de 'auto' para um valor fixo */
+					margin-top: 0;
+					margin-bottom: 25px; /* Adiciona espaço abaixo do título */
+					padding-top: 0;
 				}
 
 				#toggle-button {
@@ -903,5 +926,4 @@
 		</script>
 	</body>
 </html>
-
 
