@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 	<head>
-		<title>Ganwalk II - Experiência II</title>
+		<title>ASCII Video Editor</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<!-- A biblioteca dat.GUI foi removida -->
-		<!-- Importa as fontes Inter e Astloch do Google Fonts -->
     	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 		<link href="https://fonts.googleapis.com/css2?family=Astloch:wght@400;700&display=swap" rel="stylesheet">
 		<style>
 			:root {
-				--control-bg: rgba(0, 0, 0, 0.8);
+				--control-bg: rgba(0, 0, 0, 0.85);
 				--border-color: rgba(255, 255, 255, 0.2);
-				--shadow-color: rgba(255, 255, 255, 0.15);
 				--text-color: #ccc;
 				--highlight-color: #fff;
+				--record-color: #d32f2f;
 			}
 			html, body {
 				width: 100%;
@@ -22,8 +20,6 @@
 				margin: 0;
 				padding: 0;
 				overflow: hidden;
-			}
-			body {
 				background-color: #000;
 				font-family: 'Inter', sans-serif;
 				color: var(--text-color);
@@ -39,75 +35,11 @@
 				height: 100%;
 				display: block;
 			}
-			
-			/* --- TELA DE INÍCIO --- */
-			#start-screen {
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100vw;
-				height: 100vh;
-				background-color: #000;
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				align-items: center;
-				z-index: 200;
-				transition: opacity 1.5s ease;
-				text-align: center;
-				/* ALTERADO: Começa invisível para esperar a fonte carregar */
-				opacity: 0;
-				pointer-events: none;
-			}
-			/* ADICIONADO: Classe para tornar a tela visível após o carregamento da fonte */
-			#start-screen.visible {
-				opacity: 1;
-				pointer-events: auto;
-			}
-			#start-screen.hidden {
-				opacity: 0;
-				pointer-events: none;
-			}
-			#ganwalk-text {
-				font-family: 'Astloch', cursive;
-				font-weight: 700;
-				letter-spacing: -0.02em;
-				font-size: 10vw;
-				color: #fff;
-				text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(200, 200, 200, 0.6);
-			}
-			#click-to-start-text {
-				font-size: 1.5rem;
-				color: #fff;
-				cursor: pointer;
-				transition: color 0.3s ease;
-			}
-			#click-to-start-text:hover {
-				color: #ccc;
-			}
-			.faça-glow {
-				text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #fff;
-				animation: faça-flicker 2s infinite alternate;
-			}
-			@keyframes faça-flicker {
-				0%, 100% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #fff; }
-				50% { text-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 10px #fff; }
-			}
 
-
-			/* --- NOVA INTERFACE PERSONALIZADA --- */
-
-			/* ADICIONADO: Esconde os controlos durante o ecrã de início */
-			body.loading #controls-bar,
-			body.loading #toggle-button,
-			body.loading #create-prompt-text {
-				opacity: 0;
-				pointer-events: none;
-			}
-
+			/* INTERFACE DE EDIÇÃO */
 			#toggle-button {
 				position: absolute;
-				bottom: 20px; /* Posição fixa no fundo */
+				bottom: 20px;
 				left: 50%;
 				transform: translateX(-50%);
 				width: 50px;
@@ -115,42 +47,34 @@
 				border-radius: 50%;
 				background: var(--control-bg);
 				border: 1px solid var(--border-color);
-				box-shadow: 0 0 20px rgba(255, 255, 255, 0.15); /* Sombra/brilho branco */
+				box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				cursor: pointer;
-				pointer-events: all;
-				transition: background-color 0.2s, opacity 0.5s ease;
+				z-index: 101;
+				transition: background-color 0.2s;
 				backdrop-filter: blur(10px);
-				-webkit-backdrop-filter: blur(10px);
-				z-index: 101; /* Fica por cima do menu */
 			}
-			#toggle-button:hover {
-				background: rgba(255, 255, 255, 0.1);
-			}
+			#toggle-button:hover { background: rgba(255, 255, 255, 0.1); }
 
 			#controls-bar {
 				position: absolute;
-				bottom: 85px; /* Posição acima do botão */
+				bottom: 85px;
 				left: 50%;
 				transform: translateX(-50%);
 				background: var(--control-bg);
 				backdrop-filter: blur(10px);
-				-webkit-backdrop-filter: blur(10px);
 				border: 1px solid var(--border-color);
-				box-shadow: 0 0 30px rgba(255, 255, 255, 0.15); /* Sombra/brilho branco */
+				box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
 				width: 90vw;
-				max-width: 800px;
-				padding: 15px 25px;
-				transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
-				pointer-events: all;
-				border-radius: 8px; /* Cantos arredondados */
+				max-width: 850px;
+				padding: 20px;
+				transition: opacity 0.3s ease, transform 0.3s ease;
+				border-radius: 8px;
 				z-index: 100;
 				box-sizing: border-box;
 			}
-
-			/* Lógica de expandir/recolher */
 			#controls-bar:not(.expanded) {
 				opacity: 0;
 				transform: translateX(-50%) translateY(20px);
@@ -161,96 +85,77 @@
 				fill: var(--highlight-color);
 				width: 24px;
 				height: 24px;
-				transition: transform 0.4s ease-in-out;
+				transition: transform 0.3s ease;
 			}
-
-			/* A rotação da seta depende se o menu está expandido */
-			#controls-bar.expanded ~ #toggle-button #toggle-arrow {
-				transform: rotate(180deg);
-			}
-
+			#controls-bar.expanded ~ #toggle-button #toggle-arrow { transform: rotate(180deg); }
 
 			.controls-grid {
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+				grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 				gap: 20px;
 			}
-
 			.control-group {
 				display: flex;
 				flex-direction: column;
-				gap: 8px;
-			}
-			.control-group label {
-				font-size: 12px;
+				gap: 12px;
 			}
 			.control-row {
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
+				gap: 10px;
 			}
-			.control-row label {
-				flex-grow: 1;
-			}
-
-			/* Estilos para inputs */
-			input[type="range"], input[type="text"], select, button {
-				background: #111;
+			.control-row label { flex-grow: 1; font-size: 13px;}
+			
+			input[type="range"], input[type="text"], button {
+				background: #1a1a1a;
 				border: 1px solid #444;
 				color: var(--highlight-color);
-				padding: 8px;
+				padding: 8px 12px;
 				font-family: 'Inter', sans-serif;
 				width: 100%;
 				box-sizing: border-box;
 				border-radius: 4px;
 			}
+			input[type="text"] { width: 60%; }
 			
 			button {
 				cursor: pointer;
-				transition: background-color 0.2s, border-color 0.2s;
+				transition: all 0.2s;
+				font-weight: bold;
 			}
-			button:hover {
-				background: #222;
-				border-color: #666;
+			button:hover { background: #333; }
+
+			.btn-record { border-color: var(--record-color); color: var(--record-color); }
+			.btn-record:hover { background: var(--record-color); color: #fff; }
+			.recording { background: var(--record-color) !important; color: #fff !important; animation: pulse 1.5s infinite; }
+
+			@keyframes pulse {
+				0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
+				70% { box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); }
+				100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
 			}
 
 			input[type="color"] {
 				-webkit-appearance: none;
-				-moz-appearance: none;
 				appearance: none;
 				width: 40px;
-				height: 25px;
+				height: 28px;
 				background-color: transparent;
 				border: 1px solid #444;
 				cursor: pointer;
 				padding: 0;
 				border-radius: 4px;
 			}
-			input[type="color"]::-webkit-color-swatch {
-				border: none;
-				border-radius: 3px;
-			}
-			input[type="color"]::-moz-color-swatch {
-				border: none;
-				border-radius: 3px;
-			}
-			input[type="checkbox"] {
-				accent-color: var(--highlight-color);
-				width: 18px;
-				height: 18px;
-			}
+			input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+			input[type="checkbox"] { accent-color: var(--highlight-color); width: 18px; height: 18px; }
 
 			input[type="range"] {
 				-webkit-appearance: none;
 				padding: 0;
-				height: 12px;
-				background: transparent;
-			}
-			input[type="range"]::-webkit-slider-runnable-track {
-				width: 100%;
-				height: 4px;
+				height: 6px;
 				background: #333;
-				border-radius: 2px;
+				border-radius: 3px;
 			}
 			input[type="range"]::-webkit-slider-thumb {
 				-webkit-appearance: none;
@@ -258,218 +163,53 @@
 				width: 16px;
 				background: var(--highlight-color);
 				cursor: pointer;
-				margin-top: -6px;
 				border-radius: 50%;
 			}
 
-			.button-group {
-				display: flex;
-				gap: 10px;
-			}
-
-			/* NOVO: Estilos para o leitor de música */
-			#music-player-container {
-				display: flex;
-				align-items: center;
-				gap: 10px;
-				background: #111;
-				border: 1px solid #444;
-				border-radius: 4px;
-				padding: 5px;
-			}
-
-			#play-pause-music-btn {
-				width: 40px;
-				height: 40px;
-				padding: 0;
-				flex-shrink: 0;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-			}
-
-			#music-player-container svg {
-				width: 24px;
-				height: 24px;
-				fill: var(--highlight-color);
-			}
-
-			.progress-container {
-				display: flex;
-				flex-direction: column;
-				width: 100%;
-				gap: 2px;
-			}
-
-			#music-progress-slider {
-				width: 100%;
-				margin: 0;
-			}
-
-			#music-time-display {
-				font-size: 10px;
-				color: var(--text-color);
-				align-self: flex-end;
-			}
-			
-			/* ALTERADO: Estilo para o título na interface */
+			.button-group { display: flex; gap: 10px; }
 			.interface-title {
 				font-family: 'Astloch', cursive;
 				font-weight: 700;
-				text-align: left; /* Alinhado à esquerda */
-				font-size: 2.5rem; /* Aumenta um pouco para destaque */
+				font-size: 2rem;
 				color: var(--highlight-color);
-				user-select: none;
-				white-space: nowrap; /* Impede a quebra de linha */
-				margin-top: auto; /* Empurra o título para o fundo da coluna flex */
-				padding-top: 15px; /* Adiciona espaço acima do título */
-				/* ADICIONADO: Efeito de brilho */
-				text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(200, 200, 200, 0.6);
+				margin-bottom: 5px;
 			}
 
-			/* ADICIONADO: Estilo para a mensagem "Clique aqui e crie" */
-			#create-prompt-text {
-				position: absolute;
-				bottom: 80px;
-				left: 50%;
-				transform: translateX(-50%);
-				color: var(--text-color);
-				font-size: 1rem;
-				user-select: none;
-				pointer-events: none;
-				transition: opacity 0.4s ease-in-out;
-			}
-
-			#controls-bar.expanded ~ #create-prompt-text {
-				opacity: 0;
-			}
-			
-			/* ADICIONADO: Barra de rolagem subtil para a interface mobile */
-			#controls-bar::-webkit-scrollbar {
-				width: 6px;
-			}
-
-			#controls-bar::-webkit-scrollbar-track {
-				background: transparent;
-			}
-
-			#controls-bar::-webkit-scrollbar-thumb {
-				background-color: var(--border-color);
-				border-radius: 10px;
-			}
-
-
-			/* --- MEDIA QUERIES PARA RESPONSIVIDADE --- */
 			@media (max-width: 768px) {
-				#controls-bar {
-					width: 95vw; /* Ocupa mais a largura da tela */
-					bottom: 75px; /* Sobe um pouco para dar espaço */
-					padding: 15px; /* Menos preenchimento interno */
-				}
-
-				.controls-grid {
-					grid-template-columns: 1fr; /* Força uma única coluna */
-					gap: 25px; /* Aumenta o espaço entre os grupos de controlo */
-				}
-				
-				/* NOVO: Torna a primeira coluna um container flex para reordenar o título */
-				.control-group:first-of-type {
-					display: flex;
-					flex-direction: column;
-				}
-
-				/* ALTERADO: Move o título para o topo na versão mobile */
-				.interface-title {
-					order: -1; /* Move para o topo do seu container flex */
-					text-align: center;
-					margin-top: 0;
-					margin-bottom: 25px; /* Adiciona espaço abaixo do título */
-					padding-top: 0;
-				}
-
-				#toggle-button {
-					width: 45px;
-					height: 45px;
-					bottom: 15px;
-				}
-
-				#ganwalk-text {
-					font-size: 15vw; /* Aumenta um pouco em relação à largura para impacto */
-				}
-
-				#click-to-start-text {
-					font-size: 1.2rem; /* Um pouco menor para caber melhor */
-				}
-
-				#create-prompt-text {
-					bottom: 70px;
-				}
+				#controls-bar { width: 95vw; bottom: 75px; max-height: 70vh; overflow-y: auto;}
+				.controls-grid { grid-template-columns: 1fr; }
+				.interface-title { text-align: center; }
 			}
-
-			@media (max-width: 480px) {
-				#controls-bar {
-					padding: 10px;
-					max-height: 50vh; /* Evita que o menu ocupe a tela toda */
-					overflow-y: auto; /* Permite rolar o menu se for muito grande */
-				}
-				.button-group {
-					flex-direction: column; /* Empilha os botões */
-				}
-			}
-
-
 		</style>
 	</head>
 
-	<body class="loading">
-		<!-- TELA DE INÍCIO -->
-		<div id="start-screen">
-			<div id="ganwalk-text">GANWALK II</div>
-			<div id="click-to-start-text">Clique, ouça e <span class="faça-glow">faça</span>.</div>
-		</div>
-
-		<!-- Canvas visível onde a arte ASCII será desenhada -->
+	<body>
 		<canvas id="output-canvas"></canvas>
 
-		<!-- Elementos de processamento ocultos -->
-		<video id="video" autoplay playsinline muted></video>
+		<video id="video" autoplay playsinline muted loop></video>
 		<canvas id="hidden-canvas"></canvas>
 		<input type="file" id="video-upload" accept="video/*" style="display: none;">
-		<audio id="background-audio" src="https://audio.jukehost.co.uk/nEuRJdPoMNUs1TaOipQi1LHjduQEMJWg" loop style="display:none;"></audio>
 		
-		<!-- NOVA INTERFACE DE CONTROLOS -->
-		<div id="controls-bar">
+		<div id="controls-bar" class="expanded">
 			<div class="controls-grid">
-				<!-- Coluna 1: Ações, Texto e Exportação -->
 				<div class="control-group">
+					<div class="interface-title">ASCII Editor</div>
 					<div class="button-group">
-						<button id="clip-btn">Clipe Original</button>
 						<button id="upload-btn">Carregar Vídeo</button>
 						<button id="webcam-btn">Usar Webcam</button>
 					</div>
-					
-					<div id="music-player-container">
-						<button id="play-pause-music-btn">
-							<svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-							<svg id="pause-icon" style="display: none;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-						</button>
-						<div class="progress-container">
-							<input type="range" id="music-progress-slider" min="0" value="0" step="1">
-							<span id="music-time-display">0:00 / 0:00</span>
-						</div>
-					</div>
-					
-					<!-- Separador Visual -->
-					<hr style="border: none; border-top: 1px solid var(--border-color); margin: 8px 0;">
-
+					<hr style="border-top: 1px solid var(--border-color); width: 100%; margin: 5px 0;">
 					<div class="button-group">
-						<button id="export-image-btn">Exportar Imagem</button>
+						<button id="export-image-btn">Exportar Foto</button>
+						<button id="record-video-btn" class="btn-record">Gravar Vídeo</button>
 					</div>
-					<!-- TÍTULO MOVIDO PARA A PRIMEIRA COLUNA -->
-					<div class="interface-title">GANWALK II</div>
 				</div>
-				<!-- Coluna 2: Aparência -->
+
 				<div class="control-group">
+					<div class="control-row">
+						<label for="ascii-text">Texto Base ASCII</label>
+						<input type="text" id="ascii-text" value="ganwalk">
+					</div>
 					<div class="control-row">
 						<label for="bg-color-picker">Cor de Fundo</label>
 						<input type="color" id="bg-color-picker">
@@ -478,87 +218,74 @@
 						<label for="bg-gradient-check">Fundo com Vídeo?</label>
 						<input type="checkbox" id="bg-gradient-check">
 					</div>
-					<label for="bg-opacity-slider">Opacidade do Fundo</label>
+					<label for="bg-opacity-slider" style="font-size: 12px;">Opacidade do Fundo de Vídeo</label>
 					<input type="range" id="bg-opacity-slider" min="0" max="100" step="1">
 					<div class="control-row">
-						<label for="font-color1-picker">Cor da Fonte 1</label>
+						<label for="font-color1-picker">Cor do Texto (Escuro)</label>
 						<input type="color" id="font-color1-picker">
 					</div>
 					<div class="control-row">
-						<label for="font-color2-picker">Cor da Fonte 2</label>
+						<label for="font-color2-picker">Cor do Texto (Claro)</label>
 						<input type="color" id="font-color2-picker">
 					</div>
 				</div>
-				<!-- Coluna 3: Parâmetros -->
+
 				<div class="control-group">
-					<label for="font-size-slider">Fator de Tamanho</label>
+					<label for="font-size-slider" style="font-size: 12px;">Tamanho da Fonte</label>
 					<input type="range" id="font-size-slider" min="1" max="20" step="1">
-					<label for="resolution-slider">Resolução</label>
+					<label for="resolution-slider" style="font-size: 12px;">Resolução (Grid)</label>
 					<input type="range" id="resolution-slider" min="10" max="150" step="1">
-					<label for="threshold-slider">Limiar de Brilho</label>
+					<label for="threshold-slider" style="font-size: 12px;">Corte de Sombra (Threshold)</label>
 					<input type="range" id="threshold-slider" min="0" max="255" step="1">
 					<div class="control-row">
 						<label for="invert-check">Inverter Cores?</label>
 						<input type="checkbox" id="invert-check">
 					</div>
-					<label for="randomness-slider">Aleatoriedade</label>
+					<label for="randomness-slider" style="font-size: 12px;">Tremor/Aleatoriedade</label>
 					<input type="range" id="randomness-slider" min="0" max="20" step="1">
 				</div>
 			</div>
 		</div>
-		<!-- ADICIONADO: Mensagem para quando o menu está fechado -->
-		<div id="create-prompt-text">Clique para <span class="faça-glow">criar</span>.</div>
+
 		<div id="toggle-button">
-			<svg id="toggle-arrow" viewBox="0 0 24 24">
-				<path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
-			</svg>
+			<svg id="toggle-arrow" viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
 		</div>
 
-		<!-- SCRIPT DO MP4-MUXER REMOVIDO -->
-		
-		<!-- SCRIPT PRINCIPAL DA APLICAÇÃO -->
 		<script>
-			// Lógica principal da aplicação
 			const video = document.getElementById('video');
 			const hiddenCanvas = document.getElementById('hidden-canvas');
 			const hiddenCtx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
 			const outputCanvas = document.getElementById('output-canvas');
 			const outputCtx = outputCanvas.getContext('2d');
 			const videoUpload = document.getElementById('video-upload');
-			const backgroundAudio = document.getElementById('background-audio');
 
 			let stream;
+			let mediaRecorder;
+			let recordedChunks = [];
+			let isRecording = false;
 			
 			const settings = {
+				asciiText: 'ganwalk', // Novo parâmetro
 				backgroundColor: '#000000',
 				bgGradient: false,
 				bgSaturation: 72,
 				fontColor: '#00ffff',
 				fontColor2: '#ff7100',
 				fontSizeFactor: 10,
-				resolution: 35,
+				resolution: window.innerWidth <= 768 ? 30 : 50,
 				threshold: 0,
 				invert: false,
 				randomness: 0
 			};
 
-			// ALTERADO: Ajusta a resolução inicial para dispositivos móveis para melhor performance.
-			if (window.innerWidth <= 768) {
-				settings.resolution = 20; 
-			}
-			
-			const ORIGINAL_CLIP_URL = 'https://raw.githubusercontent.com/ganwalk/ganwalkascii/main/1002%20(1)%20(1).mp4';
-
-			// --- Funções da Lógica Principal ---
-
 			function getCharSet() {
-				return "ganwalk";
+				return settings.asciiText || " ";
 			}
 			
 			function toAscii(grayData, width, height) {
 				const charSet = getCharSet();
 				let asciiLines = [];
-				let userTextIndex = 0; 
+				let userTextIndex = 0; 
 				const finalGrayScales = new Uint8Array(grayData.length);
 
 				for (let y = 0; y < height; y++) {
@@ -576,7 +303,6 @@
 						}
 
 						let character;
-
 						if (charSet && charSet.length > 0) {
 							let finalIndex = userTextIndex;
 							if (settings.randomness > 0) {
@@ -607,13 +333,21 @@
 			}
 
 			function draw() {
-				if (!video.videoWidth || (!video.srcObject && (video.paused || video.ended))) {
-					requestAnimationFrame(draw);
-					return;
-				};
-				
 				outputCanvas.width = window.innerWidth;
 				outputCanvas.height = window.innerHeight;
+
+				// Tela inicial se não houver vídeo
+				if (!video.videoWidth || (!video.srcObject && !video.src)) {
+					outputCtx.fillStyle = settings.backgroundColor;
+					outputCtx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+					outputCtx.fillStyle = settings.fontColor2;
+					outputCtx.textAlign = 'center';
+					outputCtx.textBaseline = 'middle';
+					outputCtx.font = '20px Inter, sans-serif';
+					outputCtx.fillText('Carregue um vídeo ou use a webcam para iniciar.', outputCanvas.width / 2, outputCanvas.height / 2);
+					requestAnimationFrame(draw);
+					return;
+				}
 				
 				const screenAspectRatio = outputCanvas.width / outputCanvas.height;
 				let gridWidth, gridHeight;
@@ -628,38 +362,22 @@
 				hiddenCanvas.width = gridWidth;
 				hiddenCanvas.height = gridHeight;
 
-    
 				const videoAspectRatio = video.videoWidth / video.videoHeight;
-    
-				const gridAspectRatio = gridWidth / gridHeight; 
-    
-    
+				const gridAspectRatio = gridWidth / gridHeight; 
 				let sWidth, sHeight, sx, sy;
-    
-    
+
 				if (videoAspectRatio > gridAspectRatio) {
-    
 					sHeight = video.videoHeight;
-    
 					sWidth = sHeight * gridAspectRatio;
-    
 					sx = (video.videoWidth - sWidth) / 2;
-    
 					sy = 0;
-    
 				} else {
-    
 					sWidth = video.videoWidth;
-    
 					sHeight = sWidth / gridAspectRatio;
-    
 					sx = 0;
-    
 					sy = (video.videoHeight - sHeight) / 2;
-    
 				}
 
-    
 				hiddenCtx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, gridWidth, gridHeight);
 
 				const imageData = hiddenCtx.getImageData(0, 0, gridWidth, gridHeight);
@@ -669,8 +387,7 @@
 					const r = data[i];
 					const g = data[i + 1];
 					const b = data[i + 2];
-					const gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-					grayScales[i / 4] = gray;
+					grayScales[i / 4] = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 				}
 
 				const { asciiLines, finalGrayScales } = toAscii(grayScales, gridWidth, gridHeight);
@@ -685,21 +402,10 @@
 					outputCtx.fillStyle = settings.backgroundColor;
 					outputCtx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
 					outputCtx.globalAlpha = settings.bgSaturation / 100;
-
 					outputCtx.imageSmoothingEnabled = false;
-					outputCtx.mozImageSmoothingEnabled = false;
-					outputCtx.webkitImageSmoothingEnabled = false;
-					outputCtx.msImageSmoothingEnabled = false;
-
 					outputCtx.drawImage(hiddenCanvas, 0, 0, outputCanvas.width, outputCanvas.height);
-
 					outputCtx.imageSmoothingEnabled = true;
-					outputCtx.mozImageSmoothingEnabled = true;
-					outputCtx.webkitImageSmoothingEnabled = true;
-					outputCtx.msImageSmoothingEnabled = true;
-					
 					outputCtx.globalAlpha = 1.0;
-
 				} else {
 					outputCtx.fillStyle = settings.backgroundColor;
 					outputCtx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
@@ -711,11 +417,11 @@
 				for (let y = 0; y < gridHeight; y++) {
 					for (let x = 0; x < gridWidth; x++) {
 						const pixelIndex = x + y * gridWidth;
-						const gray = finalGrayScales[pixelIndex];
 						const character = asciiLines[y][x];
 
 						if (character === ' ') continue;
 
+						const gray = finalGrayScales[pixelIndex];
 						const factor = gray / 255;
 
 						const r = Math.floor(color1RGB.r + (color2RGB.r - color1RGB.r) * factor);
@@ -725,57 +431,25 @@
 						outputCtx.fillStyle = `rgb(${r},${g},${b})`;
 
 						const charSize = factor * cellHeight * (settings.fontSizeFactor / 5.0);
-
 						if (charSize < 1) continue;
 
 						outputCtx.font = `${charSize}px monospace`;
-						
-						const cellCenterX = x * cellWidth + cellWidth / 2;
-						const cellCenterY = y * cellHeight + cellHeight / 2;
-						
-						outputCtx.fillText(character, cellCenterX, cellCenterY);
+						outputCtx.fillText(character, x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2);
 					}
 				}
-				
 				requestAnimationFrame(draw);
-			}
-			
-			// --- Funções Auxiliares ---
-			function setupOriginalClip() {
-				if (stream) {
-					stream.getTracks().forEach(track => track.stop());
-					stream = null;
-				}
-				video.srcObject = null;
-				video.src = ORIGINAL_CLIP_URL;
-				video.crossOrigin = "anonymous";
-				video.loop = true;
-
-				video.onerror = () => {
-					console.error("Erro ao carregar o vídeo. Verifique o URL e as permissões de CORS do servidor.");
-				};
-
-				const playPromise = video.play();
-				if (playPromise !== undefined) {
-					playPromise.catch(error => {
-						console.error("A reprodução automática do vídeo foi impedida:", error);
-						video.oncanplay = () => video.play();
-					});
-				}
 			}
 			
 			async function setupWebcam() {
 				video.src = '';
 				try {
-					if (stream) {
-						stream.getTracks().forEach(track => track.stop());
-					}
+					if (stream) stream.getTracks().forEach(track => track.stop());
 					stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
 					video.srcObject = stream;
 					video.loop = false;
 					video.oncanplay = () => video.play();
 				} catch (err) {
-					console.error("Erro ao aceder à câmara: ", err);
+					alert("Erro ao acessar a câmera. Verifique as permissões.");
 				}
 			}
 
@@ -783,10 +457,7 @@
 				video.src = '';
 				const file = event.target.files[0];
 				if (file) {
-					if (stream) {
-						stream.getTracks().forEach(track => track.stop());
-						stream = null;
-					}
+					if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
 					video.srcObject = null;
 					video.src = URL.createObjectURL(file);
 					video.loop = true;
@@ -796,151 +467,82 @@
 
 			function exportImage() {
 				const link = document.createElement('a');
-				link.download = 'ascii-image.png';
+				link.download = 'ascii-arte.png';
 				link.href = outputCanvas.toDataURL('image/png');
 				link.click();
 			}
 
-			// --- INICIALIZAÇÃO E EVENTOS DA NOVA INTERFACE ---
-			document.addEventListener('DOMContentLoaded', () => {
-				const startScreen = document.getElementById('start-screen');
-				const clickToStartText = document.getElementById('click-to-start-text');
+			// SISTEMA DE GRAVAÇÃO DE VÍDEO
+			function toggleRecording() {
+				const recordBtn = document.getElementById('record-video-btn');
 				
-				document.fonts.ready.then(() => {
-					startScreen.classList.add('visible');
-				});
-
-				clickToStartText.addEventListener('click', async () => {
-					startScreen.classList.add('hidden');
-					document.body.classList.remove('loading'); // Mostra os controlos
-					try {
-						await backgroundAudio.play();
-					} catch(err) {
-						console.error("Falha ao reproduzir áudio:", err);
-					}
-				});
-				
-				const controlsBar = document.getElementById('controls-bar');
-				const toggleButton = document.getElementById('toggle-button');
-				
-				const clipBtn = document.getElementById('clip-btn');
-				const uploadBtn = document.getElementById('upload-btn');
-				const webcamBtn = document.getElementById('webcam-btn');
-				const exportImageBtn = document.getElementById('export-image-btn');
-
-				const playPauseMusicBtn = document.getElementById('play-pause-music-btn');
-				const musicProgressSlider = document.getElementById('music-progress-slider');
-				const musicTimeDisplay = document.getElementById('music-time-display');
-				const playIcon = document.getElementById('play-icon');
-				const pauseIcon = document.getElementById('pause-icon');
-
-				const bgColorPicker = document.getElementById('bg-color-picker');
-				const bgGradientCheck = document.getElementById('bg-gradient-check');
-				const bgOpacitySlider = document.getElementById('bg-opacity-slider');
-				const fontColor1Picker = document.getElementById('font-color1-picker');
-				const fontColor2Picker = document.getElementById('font-color2-picker');
-				const fontSizeSlider = document.getElementById('font-size-slider');
-				const resolutionSlider = document.getElementById('resolution-slider');
-				const thresholdSlider = document.getElementById('threshold-slider');
-				const invertCheck = document.getElementById('invert-check');
-				const randomnessSlider = document.getElementById('randomness-slider');
-
-				toggleButton.addEventListener('click', () => {
-					controlsBar.classList.toggle('expanded');
-				});
-				
-				clipBtn.addEventListener('click', setupOriginalClip);
-				uploadBtn.addEventListener('click', () => videoUpload.click());
-				webcamBtn.addEventListener('click', setupWebcam);
-				
-				playPauseMusicBtn.addEventListener('click', () => {
-					// ALTERADO: Sincroniza o vídeo com a música
-					const isOriginalClip = video.currentSrc === ORIGINAL_CLIP_URL;
-
-					if (backgroundAudio.paused) {
-						backgroundAudio.play();
-						if (isOriginalClip) {
-							video.play();
-						}
-					} else {
-						backgroundAudio.pause();
-						if (isOriginalClip) {
-							video.pause();
-						}
-					}
-				});
-
-				backgroundAudio.addEventListener('play', () => {
-					playIcon.style.display = 'none';
-					pauseIcon.style.display = 'block';
-				});
-
-				backgroundAudio.addEventListener('pause', () => {
-					playIcon.style.display = 'block';
-					pauseIcon.style.display = 'none';
-				});
-				
-				const formatTime = (seconds) => {
-					const minutes = Math.floor(seconds / 60);
-					const remainingSeconds = Math.floor(seconds % 60);
-					return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+				if (!isRecording) {
+					recordedChunks = [];
+					const canvasStream = outputCanvas.captureStream(30); // Grava a 30 FPS
+					mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
+					
+					mediaRecorder.ondataavailable = (e) => {
+						if (e.data.size > 0) recordedChunks.push(e.data);
+					};
+					
+					mediaRecorder.onstop = () => {
+						const blob = new Blob(recordedChunks, { type: 'video/webm' });
+						const url = URL.createObjectURL(blob);
+						const a = document.createElement('a');
+						a.style.display = 'none';
+						a.href = url;
+						a.download = 'ascii-video.webm';
+						document.body.appendChild(a);
+						a.click();
+						window.URL.revokeObjectURL(url);
+					};
+					
+					mediaRecorder.start();
+					isRecording = true;
+					recordBtn.textContent = 'Parar e Salvar Vídeo';
+					recordBtn.classList.add('recording');
+				} else {
+					mediaRecorder.stop();
+					isRecording = false;
+					recordBtn.textContent = 'Gravar Vídeo';
+					recordBtn.classList.remove('recording');
 				}
+			}
 
-				const updateMusicTime = () => {
-					if (isNaN(backgroundAudio.duration)) return;
-					const currentTime = formatTime(backgroundAudio.currentTime);
-					const duration = formatTime(backgroundAudio.duration);
-					musicTimeDisplay.textContent = `${currentTime} / ${duration}`;
-					musicProgressSlider.value = backgroundAudio.currentTime;
-				};
+			document.addEventListener('DOMContentLoaded', () => {
+				const controlsBar = document.getElementById('controls-bar');
+				document.getElementById('toggle-button').addEventListener('click', () => controlsBar.classList.toggle('expanded'));
 				
-				backgroundAudio.addEventListener('loadedmetadata', () => {
-					musicProgressSlider.max = backgroundAudio.duration;
-					updateMusicTime();
-				});
-
-				backgroundAudio.addEventListener('timeupdate', updateMusicTime);
-
-				musicProgressSlider.addEventListener('input', (e) => {
-					backgroundAudio.currentTime = e.target.value;
-				});
-
-				exportImageBtn.addEventListener('click', exportImage);
-
-				bgColorPicker.addEventListener('input', (e) => settings.backgroundColor = e.target.value);
-				bgGradientCheck.addEventListener('change', (e) => settings.bgGradient = e.target.checked);
-				bgOpacitySlider.addEventListener('input', (e) => settings.bgSaturation = e.target.value);
-				fontColor1Picker.addEventListener('input', (e) => settings.fontColor = e.target.value);
-				fontColor2Picker.addEventListener('input', (e) => settings.fontColor2 = e.target.value);
-				fontSizeSlider.addEventListener('input', (e) => settings.fontSizeFactor = e.target.value);
-				resolutionSlider.addEventListener('input', (e) => settings.resolution = e.target.value);
-				thresholdSlider.addEventListener('input', (e) => settings.threshold = e.target.value);
-				invertCheck.addEventListener('change', (e) => settings.invert = e.target.checked);
-				randomnessSlider.addEventListener('input', (e) => settings.randomness = e.target.value);
-
-				bgColorPicker.value = settings.backgroundColor;
-				bgGradientCheck.checked = settings.bgGradient;
-				bgOpacitySlider.value = settings.bgSaturation;
-				fontColor1Picker.value = settings.fontColor;
-				fontColor2Picker.value = settings.fontColor2;
-				fontSizeSlider.value = settings.fontSizeFactor;
-				resolutionSlider.value = settings.resolution;
-				thresholdSlider.value = settings.threshold;
-				invertCheck.checked = settings.invert;
-				randomnessSlider.value = settings.randomness;
-
+				// Bindings de Botões
+				document.getElementById('upload-btn').addEventListener('click', () => videoUpload.click());
+				document.getElementById('webcam-btn').addEventListener('click', setupWebcam);
+				document.getElementById('export-image-btn').addEventListener('click', exportImage);
+				document.getElementById('record-video-btn').addEventListener('click', toggleRecording);
 				videoUpload.addEventListener('change', handleVideoUpload);
+
+				// Bindings de Configurações
+				const bindInput = (id, settingKey, isCheckbox = false) => {
+					const el = document.getElementById(id);
+					el.addEventListener('input', (e) => settings[settingKey] = isCheckbox ? e.target.checked : e.target.value);
+					if (isCheckbox) el.checked = settings[settingKey];
+					else el.value = settings[settingKey];
+				};
+
+				bindInput('ascii-text', 'asciiText');
+				bindInput('bg-color-picker', 'backgroundColor');
+				bindInput('bg-gradient-check', 'bgGradient', true);
+				bindInput('bg-opacity-slider', 'bgSaturation');
+				bindInput('font-color1-picker', 'fontColor');
+				bindInput('font-color2-picker', 'fontColor2');
+				bindInput('font-size-slider', 'fontSizeFactor');
+				bindInput('resolution-slider', 'resolution');
+				bindInput('threshold-slider', 'threshold');
+				bindInput('invert-check', 'invert', true);
+				bindInput('randomness-slider', 'randomness');
+
 				window.addEventListener('resize', draw, false);
-				
-				clickToStartText.addEventListener('click', () => {
-					setupOriginalClip();
-					draw();
-				}, { once: true });
+				draw(); // Inicia o loop visual
 			});
 		</script>
 	</body>
 </html>
-
-
-
-
