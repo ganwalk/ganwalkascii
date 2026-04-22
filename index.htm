@@ -4,7 +4,7 @@
 		<title>ASCII Video Editor</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 		<link href="https://fonts.googleapis.com/css2?family=Astloch:wght@400;700&display=swap" rel="stylesheet">
 		<style>
 			:root {
@@ -29,10 +29,9 @@
 			}
 			#output-canvas {
 				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
 				display: block;
 			}
 
@@ -67,8 +66,8 @@
 				backdrop-filter: blur(10px);
 				border: 1px solid var(--border-color);
 				box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-				width: 90vw;
-				max-width: 850px;
+				width: 95vw;
+				max-width: 1000px;
 				padding: 20px;
 				transition: opacity 0.3s ease, transform 0.3s ease;
 				border-radius: 8px;
@@ -91,7 +90,7 @@
 
 			.controls-grid {
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+				grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 				gap: 20px;
 			}
 			.control-group {
@@ -107,7 +106,7 @@
 			}
 			.control-row label { flex-grow: 1; font-size: 13px;}
 			
-			input[type="range"], input[type="text"], button {
+			input[type="range"], input[type="text"], select, button {
 				background: #1a1a1a;
 				border: 1px solid #444;
 				color: var(--highlight-color);
@@ -117,14 +116,15 @@
 				box-sizing: border-box;
 				border-radius: 4px;
 			}
-			input[type="text"] { width: 60%; }
+			input[type="text"], select { width: 60%; }
 			
 			button {
 				cursor: pointer;
 				transition: all 0.2s;
 				font-weight: bold;
 			}
-			button:hover { background: #333; }
+			button:hover:not(:disabled) { background: #333; }
+			button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 			.btn-record { border-color: var(--record-color); color: var(--record-color); }
 			.btn-record:hover { background: var(--record-color); color: #fff; }
@@ -165,6 +165,7 @@
 				cursor: pointer;
 				border-radius: 50%;
 			}
+			input[type="range"]:disabled::-webkit-slider-thumb { background: #666; }
 
 			.button-group { display: flex; gap: 10px; }
 			.interface-title {
@@ -176,7 +177,7 @@
 			}
 
 			@media (max-width: 768px) {
-				#controls-bar { width: 95vw; bottom: 75px; max-height: 70vh; overflow-y: auto;}
+				#controls-bar { bottom: 75px; max-height: 70vh; overflow-y: auto;}
 				.controls-grid { grid-template-columns: 1fr; }
 				.interface-title { text-align: center; }
 			}
@@ -207,6 +208,25 @@
 
 				<div class="control-group">
 					<div class="control-row">
+						<label for="format-select">Formato da Tela</label>
+						<select id="format-select">
+							<option value="fullscreen">Tela Cheia</option>
+							<option value="16:9">16:9 (Horizontal)</option>
+							<option value="9:16">9:16 (Vertical)</option>
+							<option value="1:1">1:1 (Quadrado)</option>
+							<option value="4:3">4:3 (Clássico)</option>
+						</select>
+					</div>
+					<hr style="border-top: 1px solid var(--border-color); width: 100%; margin: 5px 0;">
+					<label style="font-size: 13px; font-weight: bold;">Controle de Reprodução</label>
+					<div class="control-row">
+						<button id="play-pause-btn" disabled>⏸ Pause</button>
+					</div>
+					<input type="range" id="video-progress" min="0" max="100" value="0" step="0.1" disabled>
+				</div>
+
+				<div class="control-group">
+					<div class="control-row">
 						<label for="ascii-text">Texto Base ASCII</label>
 						<input type="text" id="ascii-text" value="ganwalk">
 					</div>
@@ -218,7 +238,7 @@
 						<label for="bg-gradient-check">Fundo com Vídeo?</label>
 						<input type="checkbox" id="bg-gradient-check">
 					</div>
-					<label for="bg-opacity-slider" style="font-size: 12px;">Opacidade do Fundo de Vídeo</label>
+					<label for="bg-opacity-slider" style="font-size: 12px;">Opacidade do Fundo</label>
 					<input type="range" id="bg-opacity-slider" min="0" max="100" step="1">
 					<div class="control-row">
 						<label for="font-color1-picker">Cor do Texto (Escuro)</label>
@@ -235,7 +255,7 @@
 					<input type="range" id="font-size-slider" min="1" max="20" step="1">
 					<label for="resolution-slider" style="font-size: 12px;">Resolução (Grid)</label>
 					<input type="range" id="resolution-slider" min="10" max="150" step="1">
-					<label for="threshold-slider" style="font-size: 12px;">Corte de Sombra (Threshold)</label>
+					<label for="threshold-slider" style="font-size: 12px;">Corte de Sombra</label>
 					<input type="range" id="threshold-slider" min="0" max="255" step="1">
 					<div class="control-row">
 						<label for="invert-check">Inverter Cores?</label>
@@ -258,6 +278,8 @@
 			const outputCanvas = document.getElementById('output-canvas');
 			const outputCtx = outputCanvas.getContext('2d');
 			const videoUpload = document.getElementById('video-upload');
+			const playPauseBtn = document.getElementById('play-pause-btn');
+			const videoProgress = document.getElementById('video-progress');
 
 			let stream;
 			let mediaRecorder;
@@ -265,7 +287,8 @@
 			let isRecording = false;
 			
 			const settings = {
-				asciiText: 'ganwalk', // Novo parâmetro
+				format: 'fullscreen',
+				asciiText: 'ganwalk',
 				backgroundColor: '#000000',
 				bgGradient: false,
 				bgSaturation: 72,
@@ -333,8 +356,26 @@
 			}
 
 			function draw() {
-				outputCanvas.width = window.innerWidth;
-				outputCanvas.height = window.innerHeight;
+				// Lógica de Formato/Proporção da Tela
+				let cWidth = window.innerWidth;
+				let cHeight = window.innerHeight;
+
+				if (settings.format !== 'fullscreen') {
+					const [wRatio, hRatio] = settings.format.split(':').map(Number);
+					const targetRatio = wRatio / hRatio;
+					const screenRatio = window.innerWidth / window.innerHeight;
+
+					if (screenRatio > targetRatio) {
+						cHeight = window.innerHeight;
+						cWidth = cHeight * targetRatio;
+					} else {
+						cWidth = window.innerWidth;
+						cHeight = cWidth / targetRatio;
+					}
+				}
+
+				outputCanvas.width = cWidth;
+				outputCanvas.height = cHeight;
 
 				// Tela inicial se não houver vídeo
 				if (!video.videoWidth || (!video.srcObject && !video.src)) {
@@ -447,6 +488,11 @@
 					stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
 					video.srcObject = stream;
 					video.loop = false;
+					
+					// Desabilita controles de vídeo para webcam
+					playPauseBtn.disabled = true;
+					videoProgress.disabled = true;
+
 					video.oncanplay = () => video.play();
 				} catch (err) {
 					alert("Erro ao acessar a câmera. Verifique as permissões.");
@@ -461,6 +507,12 @@
 					video.srcObject = null;
 					video.src = URL.createObjectURL(file);
 					video.loop = true;
+					
+					// Habilita controles de vídeo
+					playPauseBtn.disabled = false;
+					videoProgress.disabled = false;
+					playPauseBtn.textContent = '⏸ Pause';
+
 					video.oncanplay = () => video.play();
 				}
 			}
@@ -478,7 +530,7 @@
 				
 				if (!isRecording) {
 					recordedChunks = [];
-					const canvasStream = outputCanvas.captureStream(30); // Grava a 30 FPS
+					const canvasStream = outputCanvas.captureStream(30); 
 					mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
 					
 					mediaRecorder.ondataavailable = (e) => {
@@ -499,7 +551,7 @@
 					
 					mediaRecorder.start();
 					isRecording = true;
-					recordBtn.textContent = 'Parar e Salvar Vídeo';
+					recordBtn.textContent = 'Parar e Salvar';
 					recordBtn.classList.add('recording');
 				} else {
 					mediaRecorder.stop();
@@ -508,6 +560,29 @@
 					recordBtn.classList.remove('recording');
 				}
 			}
+
+			// CONTROLES DE REPRODUÇÃO DO VÍDEO
+			playPauseBtn.addEventListener('click', () => {
+				if (video.paused) {
+					video.play();
+					playPauseBtn.textContent = '⏸ Pause';
+				} else {
+					video.pause();
+					playPauseBtn.textContent = '▶ Play';
+				}
+			});
+
+			video.addEventListener('timeupdate', () => {
+				if (video.duration && !videoProgress.matches(':active')) {
+					videoProgress.value = (video.currentTime / video.duration) * 100;
+				}
+			});
+
+			videoProgress.addEventListener('input', (e) => {
+				if (video.duration) {
+					video.currentTime = (e.target.value / 100) * video.duration;
+				}
+			});
 
 			document.addEventListener('DOMContentLoaded', () => {
 				const controlsBar = document.getElementById('controls-bar');
@@ -528,6 +603,7 @@
 					else el.value = settings[settingKey];
 				};
 
+				bindInput('format-select', 'format');
 				bindInput('ascii-text', 'asciiText');
 				bindInput('bg-color-picker', 'backgroundColor');
 				bindInput('bg-gradient-check', 'bgGradient', true);
